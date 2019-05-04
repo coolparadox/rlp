@@ -2,6 +2,14 @@ module RlpDecode where
 
 import Data.Word (Word8)
 
+rlpDecode :: [Word8] -> (Either [Word8] [[Word8]], [Word8])
+rlpDecode encoded@(x:_)
+    | (x < 192) = (Left decodedB, remainderB)
+    | otherwise = (Right decodedL, remainderL)
+    where
+        (decodedB, remainderB) = rlpDecodeB encoded
+        (decodedL, remainderL) = rlpDecodeL encoded
+
 rlpDecodeL :: [Word8] -> ([[Word8]], [Word8])
 rlpDecodeL encoded = (decoded, remainder) where
     (ser_length, s1) = _rlpDecodeLPrefix encoded
