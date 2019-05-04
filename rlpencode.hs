@@ -2,10 +2,14 @@ module RlpEncode where
 
 import Data.Word (Word8)
 
+rlpEncode :: Either [Word8] [[Word8]] -> [Word8]
+rlpEncode (Left bytes) = rlpEncodeB bytes
+rlpEncode (Right items) = rlpEncodeL items
+
 rlpEncodeL :: [[Word8]] -> [Word8]
-rlpEncodeL s = prefix ++ serialization where
-    serialization = concatMap rlpEncodeB s
+rlpEncodeL items = prefix ++ serialization where
     prefix = _rlpEncodeLPrefix (length serialization)
+    serialization = concatMap rlpEncodeB items
 
 _rlpEncodeLPrefix :: Int -> [Word8]
 _rlpEncodeLPrefix len
@@ -14,11 +18,11 @@ _rlpEncodeLPrefix len
     | otherwise = error "struct sequence too large"
 
 rlpEncodeB :: [Word8] -> [Word8]
-rlpEncodeB x
-    | (length x == 0) = error "empty byte array"
-    | (length x == 1 && head x < 128) = x
-    | (length x < 56) = fromIntegral (128 + length x):x
-    | (toInteger (length x) < 2^64) = [fromIntegral (183 + length (beEncode (length x)))] ++ beEncode (length x) ++ x
+rlpEncodeB bytes
+    | (length bytes == 0) = error "empty byte array"
+    | (length bytes == 1 && head bytes < 128) = bytes
+    | (length bytes < 56) = fromIntegral (128 + length bytes):bytes
+    | (toInteger (length bytes) < 2^64) = [fromIntegral (183 + length (beEncode (length bytes)))] ++ beEncode (length bytes) ++ bytes
     | otherwise = error "byte sequence too large"
 
 beEncode :: Int -> [Word8]

@@ -2,6 +2,28 @@ module RlpDecode where
 
 import Data.Word (Word8)
 
+rlpDecodeL :: [Word8] -> ([[Word8]], [Word8])
+rlpDecodeL encoded = (decoded, remainder) where
+    (ser_length, s1) = _rlpDecodeLPrefix encoded
+    (serialization, remainder) = splitAt ser_length s1
+    decoded = _rlpDecodeLSerialization serialization
+
+_rlpDecodeLPrefix :: [Word8] -> (Int, [Word8])
+_rlpDecodeLPrefix s@(x:xs)
+    | (x < 192) = error "invalid RLP item prefix"
+    | (x < 248) = (fromIntegral x - 192, xs)
+    | otherwise = (len, remainder)
+    where
+        lenght_of_length = fromIntegral x - 247
+        (be_encoding_of_length, remainder) = splitAt lenght_of_length xs
+        len = beDecode be_encoding_of_length
+
+_rlpDecodeLSerialization :: [Word8] -> [[Word8]]
+_rlpDecodeLSerialization [] = []
+_rlpDecodeLSerialization bytes = answer where
+    (item, remainder) = rlpDecodeB bytes
+    answer = item:(_rlpDecodeLSerialization remainder)
+
 rlpDecodeB :: [Word8] -> ([Word8], [Word8])
 rlpDecodeB [] = ([], [])
 rlpDecodeB s@(x:_)
