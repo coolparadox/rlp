@@ -1,4 +1,7 @@
-module RlpEncode where
+-- Recursive Lenght Prefix
+-- Ethereum Yellow Paper
+
+module RlpEncode (rlpEncode) where
 
 import Data.Word (Word8)
 
