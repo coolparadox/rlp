@@ -3,9 +3,9 @@
 
 module RlpDecode (rlpDecode) where
 
-import Data.Word (Word8)
+import Support (Byte)
 
-rlpDecode :: [Word8] -> (Either [Word8] [[Word8]], [Word8])
+rlpDecode :: [Byte] -> (Either [Byte] [[Byte]], [Byte])
 rlpDecode encoded@(x:_)
     | (x < 192) = (Left decodedB, remainderB)
     | otherwise = (Right decodedL, remainderL)
@@ -13,13 +13,13 @@ rlpDecode encoded@(x:_)
         (decodedB, remainderB) = rlpDecodeB encoded
         (decodedL, remainderL) = rlpDecodeL encoded
 
-rlpDecodeL :: [Word8] -> ([[Word8]], [Word8])
+rlpDecodeL :: [Byte] -> ([[Byte]], [Byte])
 rlpDecodeL encoded = (decoded, remainder) where
     (ser_length, s1) = _rlpDecodeLPrefix encoded
     (serialization, remainder) = splitAt ser_length s1
     decoded = _rlpDecodeLSerialization serialization
 
-_rlpDecodeLPrefix :: [Word8] -> (Int, [Word8])
+_rlpDecodeLPrefix :: [Byte] -> (Int, [Byte])
 _rlpDecodeLPrefix s@(x:xs)
     | (x < 192) = error "invalid RLP item prefix"
     | (x < 248) = (fromIntegral x - 192, xs)
@@ -29,27 +29,27 @@ _rlpDecodeLPrefix s@(x:xs)
         (be_encoding_of_length, remainder) = splitAt lenght_of_length xs
         len = beDecode be_encoding_of_length
 
-_rlpDecodeLSerialization :: [Word8] -> [[Word8]]
+_rlpDecodeLSerialization :: [Byte] -> [[Byte]]
 _rlpDecodeLSerialization [] = []
 _rlpDecodeLSerialization bytes = answer where
     (item, remainder) = rlpDecodeB bytes
     answer = item:(_rlpDecodeLSerialization remainder)
 
-rlpDecodeB :: [Word8] -> ([Word8], [Word8])
+rlpDecodeB :: [Byte] -> ([Byte], [Byte])
 rlpDecodeB [] = ([], [])
 rlpDecodeB s@(x:_)
     | (x < 128) = splitAt 1 s
     | (x < 184) = _rlpDecodeB128 s
     | otherwise = _rlpDecodeB184 s
 
-_rlpDecodeB128 :: [Word8] -> ([Word8], [Word8])
+_rlpDecodeB128 :: [Byte] -> ([Byte], [Byte])
 _rlpDecodeB128 s@(x:_) = (decoded, remainder) where
     (encoded, remainder) = splitAt length_of_encoded s
     length_of_encoded = 1 + length_of_decoded
     length_of_decoded = fromIntegral x - 128
     (_, decoded) = splitAt 1 encoded
 
-_rlpDecodeB184 :: [Word8] -> ([Word8], [Word8])
+_rlpDecodeB184 :: [Byte] -> ([Byte], [Byte])
 _rlpDecodeB184 s@(x:_) = (decoded, remainder) where
     (encoded, remainder) = splitAt length_of_encoded s
     length_of_encoded = 1 + length_of_length_of_decoded + length_of_decoded
@@ -58,7 +58,7 @@ _rlpDecodeB184 s@(x:_) = (decoded, remainder) where
     (be_encoding_of_length_of_decoded, _) = splitAt length_of_length_of_decoded (tail s)
     (_, decoded) = splitAt (1 + length_of_length_of_decoded) encoded
 
-beDecode :: [Word8] -> Int
+beDecode :: [Byte] -> Int
 beDecode [] = error "parse error"
 beDecode [x] = fromIntegral x
 beDecode (x:xs) = 256 * (fromIntegral x) + (beDecode xs)
