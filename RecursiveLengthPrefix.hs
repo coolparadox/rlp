@@ -1,7 +1,7 @@
 -- Recursive Lenght Prefix
 -- Ethereum Yellow Paper
 
-module Rlp (encode, decode) where
+module RecursiveLengthPrefix (encode, decode) where
 
 import Byte
 

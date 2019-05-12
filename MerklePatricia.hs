@@ -8,8 +8,8 @@ import Nibble
 import qualified NibbleUtil as NIB
 import Crypto.Hash.Keccak (keccak256)
 import qualified Data.ByteString as BS
-import qualified Rlp as RLP
-import qualified Hp as HP
+import qualified RecursiveLengthPrefix as RLP
+import qualified HexPrefix as HP
 
 type Key = [Byte]
 type Value = [Byte]

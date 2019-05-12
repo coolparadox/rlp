@@ -1,7 +1,7 @@
 -- Hex-Prefix Encoding
 -- Ethereum Yellow Paper
 
-module Hp (encode, decode) where
+module HexPrefix (encode, decode) where
 
 import Byte
 import Nibble
